@@ -9,7 +9,7 @@ import {
 //   import { User } from './user.entity';
   
   @Entity({ schema: 'public', name: 'transactions' }) // Map to the "transactions" table
-  export class Transaction {
+  export class Transactions {
     @PrimaryGeneratedColumn('uuid') // Automatically generates a UUID for the transaction
     id: string;
   
