@@ -63,7 +63,7 @@ export class TransactionsController {
     }
   }
 
-  @Delete('/delete/all')
+  @Delete('/deleteAll')
   async deleteAllTransactions( id: string ,@Req() req: Request): Promise<{ message: string }> {
     // const user = req.user.sub
     // if (user !== id){
@@ -72,14 +72,14 @@ export class TransactionsController {
     try {
       
       await this.transactionService.deleteAllTrans();
-      return { message: 'Transaction Deleted' };
+      return { message: 'All Transactions Deleted' };
     } catch (error) {
       throw new BadRequestException(error.message);
     }
   }
 
   @Put('/update/:id')
-  async updateTransaction(@Param('id') id:string, updateDTO: updateTransactionDTO){
+  async updateTransaction(@Param('id') id:string, @Body() updateDTO: updateTransactionDTO){
     try {
       const OneData = this.transactionService.getOneTrans(id)
       if(!OneData){

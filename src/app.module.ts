@@ -17,12 +17,12 @@ dotenv.config(); // Load .env file
       type: 'postgres',
             host: process.env.DB_HOST || 'localhost',
             port: parseInt(process.env.DB_PORT || '5433', 10),
-            username: process.env.DB_USERNAME || 'postgres',
-            password: process.env.DB_PASSWORD || 'password',
-            database: process.env.DB_DATABASE || 'auth_service',
+            username: process.env.DB_USERNAME ,
+            password: process.env.DB_PASSWORD ,
+            database: process.env.DB_DATABASE ,
             schema: 'public', // Adjust if using a different schema
             entities: [Transactions], // Register entities
-            synchronize: true, // Use true for development, false for production
+            synchronize: false, // Disable synchronization
             logging: false, // Enable logging if needed
     }),
     //UserModule,

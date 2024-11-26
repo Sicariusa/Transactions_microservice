@@ -3,14 +3,14 @@ import { CreateTransactionsDTO } from '../dto/createTransactions.dto';
 import { Transactions } from '../TransactionsSchema';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { JwtService } from '@nestjs/jwt';
+
 import { updateTransactionDTO } from '../dto/updateTransaction.dto';
 @Injectable()
 export class TransactionsService {
   constructor(
     @InjectRepository(Transactions)
     private readonly TransactionRepo: Repository<Transactions>,
-    private readonly jwtService: JwtService,
+    
   ) {}
 
   async addTrans(createDto: CreateTransactionsDTO): Promise<Transactions> {
@@ -37,7 +37,9 @@ export class TransactionsService {
     await this.TransactionRepo.clear();
   }
 
-  async updateTrans(id:string, updateDTo: updateTransactionDTO){
-    await this.TransactionRepo
+  async updateTrans(id: string, updateDto: updateTransactionDTO): Promise<Transactions> {
+    await this.TransactionRepo.update(id, updateDto);
+    const updatedTransaction = await this.TransactionRepo.findOne({ where: { id } });
+    return updatedTransaction;
   }
 }
