@@ -7,6 +7,8 @@ import { ConfigModule } from '@nestjs/config';
 import * as dotenv from 'dotenv';
 import { TransactionsModule } from './transactions/transactions.module';
 import { Transactions } from './transactions/TransactionsSchema';
+import { HttpModule } from '@nestjs/axios';
+import { ExternalService } from './external.service';
 
 dotenv.config(); // Load .env file
 
@@ -34,6 +36,9 @@ dotenv.config(); // Load .env file
     //UserModule,
     //AuthModule,
     TransactionsModule,
+    HttpModule,
   ],
+  providers: [ExternalService],
+  exports: [ExternalService],
 })
 export class AppModule {}

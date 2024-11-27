@@ -5,16 +5,20 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { updateTransactionDTO } from '../dto/updateTransaction.dto';
+import { ExternalService } from 'src/external.service';
+
+
 @Injectable()
 export class TransactionsService {
   constructor(
     @InjectRepository(Transactions)
     private readonly TransactionRepo: Repository<Transactions>,
-    
+    private readonly externalService: ExternalService
   ) {}
 
   async addTrans(createDto: CreateTransactionsDTO): Promise<Transactions> {
     const transaction = await this.TransactionRepo.save(createDto);
+    await this.externalService.notifyAnalytics(transaction);
     return transaction;
   }
 
