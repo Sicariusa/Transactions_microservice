@@ -14,4 +14,10 @@ export class CreateTransactionsDTO {
     @IsNotEmpty()
     @IsDate()
     date: Date
+
+    @IsNotEmpty()
+  @IsString()
+  userId: string;
+
+    
 }

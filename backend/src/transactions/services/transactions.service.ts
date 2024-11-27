@@ -1,49 +1,78 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateTransactionsDTO } from '../dto/createTransactions.dto';
 import { Transactions } from '../TransactionsSchema';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-
 import { updateTransactionDTO } from '../dto/updateTransaction.dto';
-
-
 
 @Injectable()
 export class TransactionsService {
   constructor(
     @InjectRepository(Transactions)
-    private readonly TransactionRepo: Repository<Transactions>,
-   
+    private readonly transactionRepo: Repository<Transactions>,
   ) {}
 
+  /**
+   * Create a transaction for a specific user
+   */
   async addTrans(createDto: CreateTransactionsDTO): Promise<Transactions> {
-    const transaction = await this.TransactionRepo.save(createDto);
-   
+    const transaction = this.transactionRepo.create(createDto);
+    return await this.transactionRepo.save(transaction);
+  }
+
+  /**
+   * Get all transactions for a specific user
+   */
+  async getAllTrans(userId: string): Promise<Transactions[]> {
+    const transactions = await this.transactionRepo.find({ where: { userId } });
+    if (transactions.length === 0) {
+      throw new NotFoundException('No transactions found for this user');
+    }
+    return transactions;
+  }
+
+  /**
+   * Get a specific transaction for a user
+   */
+  async getOneTrans(id: string, userId: string): Promise<Transactions> {
+    const transaction = await this.transactionRepo.findOne({ where: { id, userId } });
+    if (!transaction) {
+      throw new NotFoundException('Transaction not found for this user');
+    }
     return transaction;
   }
 
-  async getAllTrans(): Promise<Transactions[]>{
-    const allData =await this.TransactionRepo.find()
-    return allData;
+  /**
+   * Delete a specific transaction for a user
+   */
+  async deleteTrans(id: string, userId: string): Promise<void> {
+    const transaction = await this.transactionRepo.findOne({ where: { id, userId } });
+    if (!transaction) {
+      throw new NotFoundException('Transaction not found for this user');
+    }
+    await this.transactionRepo.delete({ id, userId });
   }
 
-  async getOneTrans( id : string ): Promise<Transactions[]>{
-    const OneData = await this.TransactionRepo.find({ where: { id } })
-    return OneData
+  /**
+   * Delete all transactions for a specific user
+   */
+  async deleteAllTrans(userId: string): Promise<void> {
+    const transactions = await this.transactionRepo.find({ where: { userId } });
+    if (transactions.length === 0) {
+      throw new NotFoundException('No transactions found for this user');
+    }
+    await this.transactionRepo.delete({ userId });
   }
 
-  async deleteTrans( id: string ){
-    const del = await this.TransactionRepo.delete({ id })
-    return del
-  }
-
-  async deleteAllTrans(): Promise<void> {
-    await this.TransactionRepo.clear();
-  }
-
-  async updateTrans(id: string, updateDto: updateTransactionDTO): Promise<Transactions> {
-    await this.TransactionRepo.update(id, updateDto);
-    const updatedTransaction = await this.TransactionRepo.findOne({ where: { id } });
-    return updatedTransaction;
+  /**
+   * Update a specific transaction for a user
+   */
+  async updateTrans(id: string, updateDto: updateTransactionDTO, userId: string): Promise<Transactions> {
+    const transaction = await this.transactionRepo.findOne({ where: { id, userId } });
+    if (!transaction) {
+      throw new NotFoundException('Transaction not found for this user');
+    }
+    await this.transactionRepo.update({ id, userId }, updateDto);
+    return await this.transactionRepo.findOne({ where: { id, userId } });
   }
 }

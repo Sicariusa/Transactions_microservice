@@ -8,6 +8,9 @@ export class Transactions {
   @Column({ type: 'decimal', precision: 10, scale: 2 }) // Amount with two decimal places
   amount: number;
 
+  @Column()
+  userId: string;
+
   @Column({ name: 'vendorname', nullable: false }) // Name of the vendor or payee
   vendorName: string;
 
