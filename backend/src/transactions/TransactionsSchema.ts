@@ -1,6 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
-@Entity({ schema: 'public', name: 'transactions' }) // Map to the "transactions" table
+@Entity({ schema: 'public', name: 'Transactions' }) // Map to the "transactions" table
 export class Transactions {
   @PrimaryGeneratedColumn('uuid') // Automatically generates a UUID for the transaction
   id: string;

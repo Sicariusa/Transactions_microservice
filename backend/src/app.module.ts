@@ -14,17 +14,21 @@ dotenv.config(); // Load .env file
   imports: [
     ConfigModule.forRoot(), // This will load environment variables from .env file
     TypeOrmModule.forRoot({
-      type: 'postgres',
-            host: process.env.DB_HOST || 'localhost',
-            port: parseInt(process.env.DB_PORT || '5433', 10),
-            username: process.env.DB_USERNAME ,
-            password: process.env.DB_PASSWORD ,
-            database: process.env.DB_DATABASE ,
-            schema: 'public', // Adjust if using a different schema
-            entities: [Transactions], // Register entities
-            synchronize: false, // Disable synchronization
-            logging: false, // Enable logging if needed
+        type: 'postgres',
+        
+        host: process.env.DB_HOST,
+        port: parseInt(process.env.DB_PORT || '5432', 10),
+        username: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB_DATABASE,
+        ssl: {
+            rejectUnauthorized: false,
+            //   ca: fs.readFileSync('backend/ca-certificate.crt').toString(),
+        },
+        entities: [Transactions],
+        synchronize: true,
     }),
+    TypeOrmModule.forFeature([Transactions]),
     //UserModule,
     //AuthModule,
     TransactionsModule,
