@@ -23,10 +23,12 @@ dotenv.config(); // Load .env file
         database: process.env.DB_DATABASE,
         ssl: {
             rejectUnauthorized: false,
-            //   ca: fs.readFileSync('backend/ca-certificate.crt').toString(),
         },
         entities: [Transactions],
         synchronize: true,
+        retryAttempts: 5,
+        retryDelay: 3000,
+        connectTimeoutMS: 10000,
     }),
     TypeOrmModule.forFeature([Transactions]),
     //UserModule,
