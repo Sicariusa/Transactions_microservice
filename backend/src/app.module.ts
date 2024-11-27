@@ -30,6 +30,7 @@ dotenv.config(); // Load .env file
         retryAttempts: 5,
         retryDelay: 3000,
         connectTimeoutMS: 10000,
+        
     }),
     TypeOrmModule.forFeature([Transactions]),
     //UserModule,
