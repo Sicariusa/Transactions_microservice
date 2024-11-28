@@ -21,7 +21,7 @@ export class TransactionsService {
   async validateToken(token: string): Promise<string> {
     try {
       const response = await firstValueFrom(
-        this.httpService.post(process.env.AUTH_SERVICE_URL, { "token":token }),
+        this.httpService.post(process.env.AUTH_SERVICE_URL, { token }),
       );
       const userData = response.data;
       if (!userData || !userData.sub) {
