@@ -1,23 +1,35 @@
-import { IsDate, IsNotEmpty, IsNumber, IsString } from "class-validator";
+import { IsNotEmpty, IsString, IsNumber } from 'class-validator';
 
 export class CreateTransactionsDTO {
-    @IsNotEmpty()
-    @IsString()
-    id: string;
-    title: string
-    type: string
-    
-    @IsNotEmpty()
-    @IsNumber()
-    amount: number
+  @IsNotEmpty()
+  @IsNumber()
+  amount: number;
 
-    @IsNotEmpty()
-    @IsDate()
-    date: Date
-
-    @IsNotEmpty()
+  @IsNotEmpty()
   @IsString()
-  userId: string;
+  vendorName: string;
 
-    
+  @IsNotEmpty()
+  @IsString()
+  transactionDate: string;
+
+  @IsNotEmpty()
+  @IsString()
+  category: string;
+
+  @IsNotEmpty()
+  @IsString()
+  paymentMethod: string;
+
+  @IsString()
+  cardLastFourDigits?: string;
+
+  @IsString()
+  place?: string;
+
+  @IsString()
+  notes?: string;
+
+  // userId will be set dynamically after token validation
+  userId?: string;
 }
