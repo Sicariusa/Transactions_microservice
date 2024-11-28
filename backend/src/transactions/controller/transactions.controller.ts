@@ -43,6 +43,7 @@ export class TransactionsController {
       const response = await lastValueFrom(
         this.httpService.post(authServiceUrl, { token: actualToken })
       );
+      console.log(response.data.sub);
       return response.data.sub; // Assuming 'sub' is the userId
     } catch (error) {
       throw new UnauthorizedException('Invalid or expired token');
