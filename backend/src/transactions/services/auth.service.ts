@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ClientProxy, ClientProxyFactory, Transport } from '@nestjs/microservices';
+import { ClientProxy, ClientProxyFactory, Payload, Transport } from '@nestjs/microservices';
 
 @Injectable()
 export class AuthService {
@@ -17,8 +17,9 @@ export class AuthService {
       },
     });
   }
-
+  
   async validateUser(token: string): Promise<any> {
+    console.log('Received Payload:', Payload);
     return this.client.send({ cmd: 'validate_user' }, token).toPromise();
   }
 }
