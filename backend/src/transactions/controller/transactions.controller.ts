@@ -4,19 +4,19 @@ import { CreateTransactionsDTO } from "../dto/createTransactions.dto";
 import { Transactions } from "../schema/TransactionsSchema";
 import { Request } from "express";
 import { updateTransactionDTO } from "../dto/updateTransaction.dto";
-import { AuthService } from '../services/auth.service';
+
 
 @Controller('transactions')
 export class TransactionsController {
   constructor(
     private readonly transactionService: TransactionsService,
-    private readonly authService: AuthService
+    
   ) {}
 
   @Post('/create')
   async createTransaction(@Body() createDto: CreateTransactionsDTO, @Req() req: Request): Promise<Transactions> {
     const token = req.headers['authorization'];
-    const user = await this.authService.validateUser(token);
+    const user = await this.transactionService.validateUserToken(token);
     
     if (!user) {
       throw new UnauthorizedException('You are not authorized to perform this action');
@@ -30,7 +30,7 @@ export class TransactionsController {
   @Get()
   async getAllTransactions(@Req() req: Request): Promise<Transactions[]> {
     const token = req.headers['authorization'];
-    const user = await this.authService.validateUser(token);
+    const user = await this.transactionService.validateUserToken(token);
     
     if (!user) {
       throw new UnauthorizedException('You are not authorized to perform this action');
@@ -50,7 +50,7 @@ export class TransactionsController {
   @Get('/:id')
   async getOneTransaction(@Param('id') id: string, @Req() req: Request): Promise<Transactions> {
     const token = req.headers['authorization'];
-    const user = await this.authService.validateUser(token);
+    const user = await this.transactionService.validateUserToken(token);
     
     if (!user) {
       throw new UnauthorizedException('You are not authorized to perform this action');
@@ -70,7 +70,7 @@ export class TransactionsController {
   @Delete('/delete/:id')
   async deleteTransaction(@Param('id') id: string, @Req() req: Request): Promise<{ message: string }> {
     const token = req.headers['authorization'];
-    const user = await this.authService.validateUser(token);
+    const user = await this.transactionService.validateUserToken(token);
     
     if (!user) {
       throw new UnauthorizedException('You are not authorized to perform this action');
@@ -92,7 +92,7 @@ export class TransactionsController {
   @Delete('/deleteAll')
   async deleteAllTransactions(@Req() req: Request): Promise<{ message: string }> {
     const token = req.headers['authorization'];
-    const user = await this.authService.validateUser(token);
+    const user = await this.transactionService.validateUserToken(token);
     
     if (!user) {
       throw new UnauthorizedException('You are not authorized to perform this action');
@@ -109,7 +109,7 @@ export class TransactionsController {
   @Put('/update/:id')
   async updateTransaction(@Param('id') id: string, @Body() updateDTO: updateTransactionDTO, @Req() req: Request): Promise<Transactions> {
     const token = req.headers['authorization'];
-    const user = await this.authService.validateUser(token);
+    const user = await this.transactionService.validateUserToken(token);
     
     if (!user) {
       throw new UnauthorizedException('You are not authorized to perform this action');

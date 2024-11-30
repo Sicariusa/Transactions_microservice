@@ -18,8 +18,8 @@ export class AuthService {
     });
   }
   
-  async validateUser(token: string): Promise<any> {
-    console.log('Received Payload:', Payload);
+  async validateToken(token: string): Promise<any> {
+    console.log('Received token:', token);
     return this.client.send({ cmd: 'validate_user' }, token).toPromise();
   }
 }
