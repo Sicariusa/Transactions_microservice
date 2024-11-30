@@ -6,7 +6,7 @@ import { ConfigModule } from '@nestjs/config';
 
 import * as dotenv from 'dotenv';
 import { TransactionsModule } from './transactions/transactions.module';
-import { Transactions } from './transactions/TransactionsSchema';
+import { Transactions } from './transactions/schema/TransactionsSchema';
 import { HttpModule } from '@nestjs/axios';
 
 dotenv.config(); // Load .env file

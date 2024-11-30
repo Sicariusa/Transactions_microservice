@@ -1,69 +1,86 @@
 import { BadRequestException, Body, Controller, Delete, Get, NotFoundException, Param, Post, Put, Req, UnauthorizedException } from "@nestjs/common";
 import { TransactionsService } from "../services/transactions.service";
 import { CreateTransactionsDTO } from "../dto/createTransactions.dto";
-import { Transactions } from "../TransactionsSchema";
+import { Transactions } from "../schema/TransactionsSchema";
 import { Request } from "express";
 import { updateTransactionDTO } from "../dto/updateTransaction.dto";
 import { AuthService } from '../services/auth.service';
 
 @Controller('transactions')
 export class TransactionsController {
-  constructor(private readonly transactionService: TransactionsService
-    , private readonly authService: AuthService
+  constructor(
+    private readonly transactionService: TransactionsService,
+    private readonly authService: AuthService
   ) {}
 
   @Post('/create')
   async createTransaction(@Body() createDto: CreateTransactionsDTO, @Req() req: Request): Promise<Transactions> {
-    const token = req.headers['authorization']
-    const user = await this.authService.validateUser(token)
-    if(!user){
-      throw new UnauthorizedException('You are not authorized to perform this action')
+    const token = req.headers['authorization'];
+    const user = await this.authService.validateUser(token);
+    
+    if (!user) {
+      throw new UnauthorizedException('You are not authorized to perform this action');
     }
+
+    createDto.userId = user.id;
     const transaction = await this.transactionService.addTrans(createDto);
     return transaction;
   }
   
   @Get()
-  async getAllTransactions(@Req() req: Request,   ): Promise<Transactions[]> {
-    // const user = req.user.sub
-    // if (user !== id){
-    //   throw new UnauthorizedException('You can only access your data')
-    // }
+  async getAllTransactions(@Req() req: Request): Promise<Transactions[]> {
+    const token = req.headers['authorization'];
+    const user = await this.authService.validateUser(token);
+    
+    if (!user) {
+      throw new UnauthorizedException('You are not authorized to perform this action');
+    }
+
     try {
-      const data = await this.transactionService.getAllTrans()
-      if(!data){
-        throw new NotFoundException('No Transactions Found')
+      const data = await this.transactionService.getAllTrans(user.id);
+      if (!data) {
+        throw new NotFoundException('No Transactions Found');
       }
-      return data
+      return data;
     } catch (error) {
       throw new BadRequestException(error.message);
     }
   }
+
   @Get('/:id')
-  async getOneTransaction(@Param('id') id: string): Promise<Transactions[]>{
+  async getOneTransaction(@Param('id') id: string, @Req() req: Request): Promise<Transactions> {
+    const token = req.headers['authorization'];
+    const user = await this.authService.validateUser(token);
+    
+    if (!user) {
+      throw new UnauthorizedException('You are not authorized to perform this action');
+    }
+
     try {
-      const OneData = await this.transactionService.getOneTrans(id)
-      if(!OneData){
-        throw new NotFoundException('No transaction Found')
+      const transaction = await this.transactionService.getOneTrans(id, user.id);
+      if (!transaction) {
+        throw new NotFoundException('No transaction Found');
       }
-      return OneData
+      return transaction;
     } catch (error) {
-      throw new BadRequestException(error.message)
+      throw new BadRequestException(error.message);
     }
   }
 
-  // delete
   @Delete('/delete/:id')
-  async deleteTransaction(@Param('id') id: string ,@Req() req: Request): Promise<{ message: string }> {
-    // const user = req.user.sub
-    // if (user !== id){
-    //   throw new UnauthorizedException('You can only delete your data')
-    // }
+  async deleteTransaction(@Param('id') id: string, @Req() req: Request): Promise<{ message: string }> {
+    const token = req.headers['authorization'];
+    const user = await this.authService.validateUser(token);
+    
+    if (!user) {
+      throw new UnauthorizedException('You are not authorized to perform this action');
+    }
+
     try {
-      const OneData = this.transactionService.getOneTrans(id)
-      if(!OneData){
-        throw new NotFoundException('Transaction not found')
-      } 
+      const transaction = await this.transactionService.getOneTrans(id, user.id);
+      if (!transaction) {
+        throw new NotFoundException('Transaction not found');
+      }
 
       await this.transactionService.deleteTrans(id);
       return { message: 'Transaction Deleted' };
@@ -73,14 +90,16 @@ export class TransactionsController {
   }
 
   @Delete('/deleteAll')
-  async deleteAllTransactions( id: string ,@Req() req: Request): Promise<{ message: string }> {
-    // const user = req.user.sub
-    // if (user !== id){
-    //   throw new UnauthorizedException('You can only delete your data')
-    // }
+  async deleteAllTransactions(@Req() req: Request): Promise<{ message: string }> {
+    const token = req.headers['authorization'];
+    const user = await this.authService.validateUser(token);
+    
+    if (!user) {
+      throw new UnauthorizedException('You are not authorized to perform this action');
+    }
+
     try {
-      
-      await this.transactionService.deleteAllTrans();
+      await this.transactionService.deleteAllTrans(user.id);
       return { message: 'All Transactions Deleted' };
     } catch (error) {
       throw new BadRequestException(error.message);
@@ -88,19 +107,24 @@ export class TransactionsController {
   }
 
   @Put('/update/:id')
-  async updateTransaction(@Param('id') id:string, @Body() updateDTO: updateTransactionDTO){
+  async updateTransaction(@Param('id') id: string, @Body() updateDTO: updateTransactionDTO, @Req() req: Request): Promise<Transactions> {
+    const token = req.headers['authorization'];
+    const user = await this.authService.validateUser(token);
+    
+    if (!user) {
+      throw new UnauthorizedException('You are not authorized to perform this action');
+    }
+
     try {
-      const OneData = this.transactionService.getOneTrans(id)
-      if(!OneData){
-        throw new NotFoundException('Transaction not found')
-      } 
-      const update = await this.transactionService.updateTrans(id, updateDTO);
-      return update
-      
+      const transaction = await this.transactionService.getOneTrans(id, user.id);
+      if (!transaction) {
+        throw new NotFoundException('Transaction not found');
+      }
+
+      const updatedTransaction = await this.transactionService.updateTrans(id, updateDTO);
+      return updatedTransaction;
     } catch (error) {
       throw new BadRequestException(error.message);
     }
   }
-
- 
 }

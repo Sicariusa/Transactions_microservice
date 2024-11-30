@@ -29,6 +29,9 @@ export class Transactions {
   @Column({ nullable: true, default: null }) // Notes for additional details
   notes?: string;
 
+  @Column({ name: 'userid', type: 'uuid', nullable: false }) // Associate transaction with a user
+  userId: string; // Foreign key to the user
+
   @CreateDateColumn({ name: 'createdat' }) // Automatically records creation timestamp
   createdAt: Date;
 

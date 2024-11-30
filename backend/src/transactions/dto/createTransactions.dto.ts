@@ -6,6 +6,10 @@ export class CreateTransactionsDTO {
     id: string;
     title: string
     type: string
+
+    @IsNotEmpty()
+    @IsString()
+    userId : string
     
     @IsNotEmpty()
     @IsNumber()

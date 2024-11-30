@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { CreateTransactionsDTO } from '../dto/createTransactions.dto';
-import { Transactions } from '../TransactionsSchema';
+import { Transactions } from '../schema/TransactionsSchema';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -12,38 +12,33 @@ import { updateTransactionDTO } from '../dto/updateTransaction.dto';
 export class TransactionsService {
   constructor(
     @InjectRepository(Transactions)
-    private readonly TransactionRepo: Repository<Transactions>,
+    private readonly transactionRepo: Repository<Transactions>,
    
   ) {}
 
   async addTrans(createDto: CreateTransactionsDTO): Promise<Transactions> {
-    const transaction = await this.TransactionRepo.save(createDto);
-   
-    return transaction;
+    const transaction = this.transactionRepo.create(createDto);
+    return await this.transactionRepo.save(transaction);
   }
 
-  async getAllTrans(): Promise<Transactions[]>{
-    const allData =await this.TransactionRepo.find()
-    return allData;
+  async getAllTrans(userId: string): Promise<Transactions[]> {
+    return await this.transactionRepo.find({ where: { userId } });
   }
 
-  async getOneTrans( id : string ): Promise<Transactions[]>{
-    const OneData = await this.TransactionRepo.find({ where: { id } })
-    return OneData
+  async getOneTrans(id: string, userId: string): Promise<Transactions | null> {
+    return await this.transactionRepo.findOne({ where: { id, userId } });
   }
 
-  async deleteTrans( id: string ){
-    const del = await this.TransactionRepo.delete({ id })
-    return del
+  async deleteTrans(id: string): Promise<void> {
+    await this.transactionRepo.delete({ id });
   }
 
-  async deleteAllTrans(): Promise<void> {
-    await this.TransactionRepo.clear();
+  async deleteAllTrans(userId: string): Promise<void> {
+    await this.transactionRepo.delete({ userId });
   }
 
   async updateTrans(id: string, updateDto: updateTransactionDTO): Promise<Transactions> {
-    await this.TransactionRepo.update(id, updateDto);
-    const updatedTransaction = await this.TransactionRepo.findOne({ where: { id } });
-    return updatedTransaction;
+    await this.transactionRepo.update(id, updateDto);
+    return await this.transactionRepo.findOne({ where: { id } });
   }
 }
