@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ClientProxy, ClientProxyFactory, Payload, Transport } from '@nestjs/microservices';
+import { ClientProxy, ClientProxyFactory, Transport } from '@nestjs/microservices';
 
 @Injectable()
 export class AuthService {
@@ -9,8 +9,8 @@ export class AuthService {
     this.client = ClientProxyFactory.create({
       transport: Transport.RMQ,
       options: {
-        urls: ['amqp://uNXXla3rKflI6s8p:mLjDBJ~GppHabuq.oBxWCB11pHUJrHc8@junction.proxy.rlwy.net:34338'], // Update with your RabbitMQ URL
-        queue: 'auth_queue',
+        urls: [process.env.RABBITMQ_URL ], // Use environment variable
+        queue: process.env.RABBITMQ_QUEUE || 'auth_queue', // Use environment variable
         queueOptions: {
           durable: false
         },
