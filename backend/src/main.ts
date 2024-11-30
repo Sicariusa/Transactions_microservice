@@ -6,7 +6,9 @@ import * as dotenv from 'dotenv';
 async function bootstrap() {
   dotenv.config(); // Load environment variables
 
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    logger: ['error', 'warn', 'log', 'debug', 'verbose'],
+  });
   
   const microservice = app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.RMQ,
