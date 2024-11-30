@@ -4,14 +4,23 @@ import { CreateTransactionsDTO } from "../dto/createTransactions.dto";
 import { Transactions } from "../TransactionsSchema";
 import { Request } from "express";
 import { updateTransactionDTO } from "../dto/updateTransaction.dto";
+import { AuthService } from '../services/auth.service';
 
 @Controller('transactions')
 export class TransactionsController {
-  constructor(private readonly transactionService: TransactionsService) {}
+  constructor(private readonly transactionService: TransactionsService
+    , private readonly authService: AuthService
+  ) {}
 
   @Post('/create')
-  async createTransaction(@Body() createDto: CreateTransactionsDTO): Promise<Transactions> {
-    return this.transactionService.addTrans(createDto);
+  async createTransaction(@Body() createDto: CreateTransactionsDTO, @Req() req: Request): Promise<Transactions> {
+    const token = req.headers['authorization']
+    const user = await this.authService.validateUser(token)
+    if(!user){
+      throw new UnauthorizedException('You are not authorized to perform this action')
+    }
+    const transaction = await this.transactionService.addTrans(createDto);
+    return transaction;
   }
   
   @Get()
