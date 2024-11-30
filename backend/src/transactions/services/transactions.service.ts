@@ -3,17 +3,26 @@ import { CreateTransactionsDTO } from '../dto/createTransactions.dto';
 import { Transactions } from '../schema/TransactionsSchema';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-
 import { updateTransactionDTO } from '../dto/updateTransaction.dto';
-import { AuthService } from './auth.service';
+import { ClientProxy } from '@nestjs/microservices';
+import { Inject } from '@nestjs/common';
 
 @Injectable()
 export class TransactionsService {
   constructor(
     @InjectRepository(Transactions)
     private readonly transactionRepo: Repository<Transactions>,
-    private readonly authService: AuthService,
+    @Inject('AUTH_SERVICE') private readonly authClient: ClientProxy,
   ) {}
+
+  async validateUserToken(token: string): Promise<any> {
+    return this.authClient.send({ cmd: 'validate_token' }, { token }).toPromise();
+  }
+
+  async notifyAuthService(transactionId: string) {
+    const message = { transactionId };
+    return this.authClient.emit('transaction_created', message).toPromise();
+  }
 
   async addTrans(createDto: CreateTransactionsDTO): Promise<Transactions> {
     const transaction = this.transactionRepo.create(createDto);
@@ -39,9 +48,5 @@ export class TransactionsService {
   async updateTrans(id: string, updateDto: updateTransactionDTO): Promise<Transactions> {
     await this.transactionRepo.update(id, updateDto);
     return await this.transactionRepo.findOne({ where: { id } });
-  }
-
-  async validateUserToken(token: string): Promise<any> {
-    return await this.authService.validateToken(token);
   }
 }

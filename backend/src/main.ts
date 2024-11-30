@@ -12,7 +12,7 @@ async function bootstrap() {
     transport: Transport.RMQ,
     options: {
       urls: [process.env.RABBITMQ_URL], // Use environment variable
-      queue: process.env.RABBITMQ_QUEUE || 'auth_queue', // Use environment variable
+      queue: process.env.RABBITMQ_QUEUE || 'transactions_queue', // Use environment variable // Use environment variable
       queueOptions: {
         durable: false
       },
