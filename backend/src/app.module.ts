@@ -5,15 +5,20 @@ import { ConfigModule } from '@nestjs/config';
 // import { AuthModule } from './auth/auth.module';
 
 import * as dotenv from 'dotenv';
-import { TransactionsModule } from './transactions/transactions.module';
+
 import { Transactions } from './transactions/TransactionsSchema';
 import { HttpModule } from '@nestjs/axios';
+import { TransactionsModule } from './transactions/modules/transactions.module';
+import * as Joi from 'joi';
 
 dotenv.config(); // Load .env file
 
 @Module({
   imports: [
-    ConfigModule.forRoot(), // This will load environment variables from .env file
+    ConfigModule.forRoot({
+      isGlobal: true, // Make ConfigModule available globally
+      envFilePath: '.env', // Specify the path to the .env file
+    }), // This will load environment variables from .env file
     TypeOrmModule.forRoot({
         type: 'postgres',
         

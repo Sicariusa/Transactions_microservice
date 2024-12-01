@@ -1,18 +1,22 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { CreateTransactionsDTO } from '../dto/createTransactions.dto';
 import { Transactions } from '../TransactionsSchema';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Connection, Repository } from 'typeorm';
 
 import { updateTransactionDTO } from '../dto/updateTransaction.dto';
+import { FindTransactionDTO } from '../dto/FindTransactionDTO';
 
 
 
 @Injectable()
-export class TransactionsService {
+export  class TransactionsService {
+  protected  readonly logger: Logger
   constructor(
     @InjectRepository(Transactions)
     private readonly TransactionRepo: Repository<Transactions>,
+   
+    private readonly connection: Connection,
    
   ) {}
 
@@ -27,14 +31,27 @@ export class TransactionsService {
     return allData;
   }
 
-  async getOneTrans( id : string ): Promise<Transactions[]>{
-    const OneData = await this.TransactionRepo.find({ where: { id } })
-    return OneData
+  async getOneTrans(id: string): Promise<Transactions | null> {
+    try {
+      const transaction = await this.TransactionRepo.findOne({ where: { id } });
+      return transaction || null;
+    } catch (error) {
+      console.error('Error getting one transaction:', error);
+      throw new InternalServerErrorException('Error getting one transaction');
+    }
   }
 
   async deleteTrans( id: string ){
-    const del = await this.TransactionRepo.delete({ id })
-    return del
+    try {
+      const transaction = await this.TransactionRepo.findOne({ where: { id } });
+      if (!transaction) {
+        return null;
+      }
+      await this.TransactionRepo.delete(id);
+    } catch (error) {
+      console.error('Error getting one transaction:', error);
+      throw new InternalServerErrorException('Error getting one transaction');
+    }
   }
 
   async deleteAllTrans(): Promise<void> {
@@ -42,8 +59,25 @@ export class TransactionsService {
   }
 
   async updateTrans(id: string, updateDto: updateTransactionDTO): Promise<Transactions> {
-    await this.TransactionRepo.update(id, updateDto);
-    const updatedTransaction = await this.TransactionRepo.findOne({ where: { id } });
-    return updatedTransaction;
+    try {
+      const transaction = await this.TransactionRepo.findOne({ where: { id } });
+      if (!transaction) {
+        return null;
+      }
+      await this.TransactionRepo.update(id, updateDto);
+    } catch (error) {
+      console.error('Error getting one transaction:', error);
+      throw new InternalServerErrorException('Error getting one transaction');
+    }
   }
+
+
+  async startTransaction() {
+    const queryRunner = this.connection.createQueryRunner();
+    await queryRunner.startTransaction();
+    return queryRunner;
+  }
+
+  
+
 }
