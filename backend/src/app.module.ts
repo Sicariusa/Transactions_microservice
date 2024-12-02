@@ -1,8 +1,9 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Transactions } from './transactions/TransactionsSchema';
+
 import { TransactionsModule } from './transactions/modules/transactions.module';
+import { Transactions } from './transactions/schema/TransactionsSchema';
 
 @Module({
   imports: [

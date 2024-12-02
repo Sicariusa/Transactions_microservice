@@ -1,9 +1,10 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Transactions } from '../TransactionsSchema';
+
 import { CreateTransactionsDTO } from '../dto/createTransactions.dto';
 import { updateTransactionDTO } from '../dto/updateTransaction.dto';
+import { Transactions } from '../schema/TransactionsSchema';
 
 @Injectable()
 export class TransactionsService {

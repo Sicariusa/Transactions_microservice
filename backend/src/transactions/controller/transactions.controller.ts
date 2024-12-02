@@ -1,11 +1,12 @@
 import { BadRequestException, Body, Controller, Delete, Get, Logger, NotFoundException, Param, Post, Put, Req, UnauthorizedException, UsePipes, ValidationPipe, UseGuards } from "@nestjs/common";
 import { TransactionsService } from "../services/transactions.service";
 import { CreateTransactionsDTO } from "../dto/createTransactions.dto";
-import { Transactions } from "../TransactionsSchema";
+
 import { Request } from "express";
 import { updateTransactionDTO } from "../dto/updateTransaction.dto";
 import { FindTransactionDTO } from "../dto/FindTransactionDTO";
 import { AuthGuard } from "../../../../../Authorization_microservice/backend/src/guards/auth.guard";
+import { Transactions } from "../schema/TransactionsSchema";
 
 
 @Controller('transactions')

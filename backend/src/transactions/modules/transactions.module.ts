@@ -3,8 +3,9 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { TransactionsController } from '../controller/transactions.controller';
 import { TransactionsService } from '../services/transactions.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Transactions } from '../TransactionsSchema';
+
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { Transactions } from '../schema/TransactionsSchema';
 
 @Module({
     imports: [
