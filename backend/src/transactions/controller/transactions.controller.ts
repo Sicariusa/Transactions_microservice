@@ -1,19 +1,29 @@
-import { BadRequestException, Body, Controller, Delete, Get, Logger, NotFoundException, Param, Post, Put, Req, UnauthorizedException, UsePipes, ValidationPipe } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Delete, Get, Logger, NotFoundException, Param, Post, Put, Req, UnauthorizedException, UsePipes, ValidationPipe, UseGuards } from "@nestjs/common";
 import { TransactionsService } from "../services/transactions.service";
 import { CreateTransactionsDTO } from "../dto/createTransactions.dto";
 import { Transactions } from "../TransactionsSchema";
 import { Request } from "express";
 import { updateTransactionDTO } from "../dto/updateTransaction.dto";
 import { FindTransactionDTO } from "../dto/FindTransactionDTO";
+import { AuthGuard } from "../../../../../Authorization_microservice/backend/src/guards/auth.guard";
+
 
 @Controller('transactions')
+@UseGuards(AuthGuard)
 export class TransactionsController {
   protected  readonly logger: Logger
   constructor(private readonly transactionService: TransactionsService) {}
   
   @Post('/create')
-  async createTransaction(@Body() createDto: CreateTransactionsDTO): Promise<Transactions> {
-    return this.transactionService.addTrans(createDto);
+  async createTransaction(
+    @Body() createDto: CreateTransactionsDTO,
+    @Req() req: any
+  ): Promise<Transactions> {
+    const userId = req.user?.id || createDto.userId;
+    return this.transactionService.addTrans({
+      ...createDto,
+      userId,
+    });
   }
   
   @Get()
@@ -65,20 +75,20 @@ export class TransactionsController {
     }
   }
 
-  @Delete('/deleteAll')
-  async deleteAllTransactions( id: string ,@Req() req: Request): Promise<{ message: string }> {
-    // const user = req.user.sub
-    // if (user !== id){
-    //   throw new UnauthorizedException('You can only delete your data')
-    // }
-    try {
+  // @Delete('/deleteAll')
+  // async deleteAllTransactions( id: string ,@Req() req: Request): Promise<{ message: string }> {
+  //   // const user = req.user.sub
+  //   // if (user !== id){
+  //   //   throw new UnauthorizedException('You can only delete your data')
+  //   // }
+  //   try {
       
-      await this.transactionService.deleteAllTrans();
-      return { message: 'All Transactions Deleted' };
-    } catch (error) {
-      throw new BadRequestException(error.message);
-    }
-  }
+  //     await this.transactionService.deleteAllTrans();
+  //     return { message: 'All Transactions Deleted' };
+  //   } catch (error) {
+  //     throw new BadRequestException(error.message);
+  //   }
+  // }
 
   @Put('/update/:id')
   // @UsePipes(new ValidationPipe({ transform: true }))
@@ -99,13 +109,18 @@ export class TransactionsController {
     }
   }
 
-  @Delete('/delete-all')
-  async deleteAllTrans() {
-    try {
-      await this.transactionService.deleteAllTrans();
-      return { message: 'All Transactions Deleted' };
-    } catch (error) {
-      throw new BadRequestException(error.message);
-    }
+  // @Delete('/delete-all')
+  // async deleteAllTrans() {
+  //   try {
+  //     await this.transactionService.deleteAllTrans();
+  //     return { message: 'All Transactions Deleted' };
+  //   } catch (error) {
+  //     throw new BadRequestException(error.message);
+  //   }
+  // }
+
+  @Get('/user/:userId')
+  async getUserTransactions(@Param('userId') userId: string): Promise<Transactions[]> {
+    return this.transactionService.getUserTransactions(userId);
   }
 }
