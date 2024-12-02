@@ -5,8 +5,9 @@ import { CreateTransactionsDTO } from "../dto/createTransactions.dto";
 import { Request } from "express";
 import { updateTransactionDTO } from "../dto/updateTransaction.dto";
 import { FindTransactionDTO } from "../dto/FindTransactionDTO";
-import { AuthGuard } from "../../../../../Authorization_microservice/backend/src/guards/auth.guard";
+
 import { Transactions } from "../schema/TransactionsSchema";
+import { AuthGuard } from "../guards/auth.guard";
 
 
 @Controller('transactions')
