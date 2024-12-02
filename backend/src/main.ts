@@ -1,27 +1,14 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { MicroserviceOptions, Transport } from '@nestjs/microservices';
-import * as dotenv from 'dotenv';
+import { ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
-  dotenv.config(); // Load environment variables
-
-  const app = await NestFactory.create(AppModule, {
-    logger: ['error', 'warn', 'log', 'debug', 'verbose'],
-  });
-  
-  const microservice = app.connectMicroservice<MicroserviceOptions>({
-    transport: Transport.RMQ,
-    options: {
-      urls: [process.env.RABBITMQ_URL], // Use environment variable
-      queue: process.env.RABBITMQ_QUEUE || 'transactions_queue', // Use environment variable // Use environment variable
-      queueOptions: {
-        durable: false
-      },
-    },
-  });
-
-  await app.startAllMicroservices();
-  await app.listen(process.env.PORT || 3000);
+    const app = await NestFactory.create(AppModule);
+    const configService = app.get(ConfigService);
+    
+    app.useGlobalPipes(new ValidationPipe());
+    
+    await app.listen(configService.get('PORT') || 4000);
 }
 bootstrap();

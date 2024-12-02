@@ -1,8 +1,9 @@
-import { IsDate, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
+import { IsDate, IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID } from "class-validator";
 
 export class updateTransactionDTO {
 
-
+    @IsUUID()
+    id: string;
     @IsOptional()
     @IsString()
     title?: string

@@ -14,8 +14,7 @@ COPY . .
 # Build the application
 RUN npm run build
 
-# Clean up dev dependencies
-RUN npm ci --only=production
+
 
 # Expose port 3000
 EXPOSE 3000
@@ -29,3 +28,4 @@ ENV DB_DATABASE=placeholder
 
 # Command to run the application
 CMD ["npm", "run", "start:prod"]
+

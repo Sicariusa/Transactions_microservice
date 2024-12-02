@@ -1,52 +1,58 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { CreateTransactionsDTO } from '../dto/createTransactions.dto';
-import { Transactions } from '../schema/TransactionsSchema';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { Transactions } from '../TransactionsSchema';
+import { CreateTransactionsDTO } from '../dto/createTransactions.dto';
 import { updateTransactionDTO } from '../dto/updateTransaction.dto';
-import { ClientProxy } from '@nestjs/microservices';
-import { Inject } from '@nestjs/common';
 
 @Injectable()
 export class TransactionsService {
-  constructor(
-    @InjectRepository(Transactions)
-    private readonly transactionRepo: Repository<Transactions>,
-    @Inject('AUTH_SERVICE') private readonly authClient: ClientProxy,
-  ) {}
+    constructor(
+        @InjectRepository(Transactions)
+        private readonly transactionsRepository: Repository<Transactions>,
+    ) {}
 
-  async validateUserToken(token: string): Promise<any> {
-    return this.authClient.send({ cmd: 'validate_token' }, { token }).toPromise();
-  }
+    async addTrans(createDto: CreateTransactionsDTO): Promise<Transactions> {
+        if (!createDto.userId) {
+            throw new UnauthorizedException('User ID is required');
+        }
 
-  async notifyAuthService(transactionId: string) {
-    const message = { transactionId };
-    return this.authClient.emit('transaction_created', message).toPromise();
-  }
+        const transaction = this.transactionsRepository.create(createDto);
+        return await this.transactionsRepository.save(transaction);
+    }
 
-  async addTrans(createDto: CreateTransactionsDTO): Promise<Transactions> {
-    const transaction = this.transactionRepo.create(createDto);
-    return await this.transactionRepo.save(transaction);
-  }
+    async getAllTrans(): Promise<Transactions[]> {
+        return await this.transactionsRepository.find();
+    }
 
-  async getAllTrans(userId: string): Promise<Transactions[]> {
-    return await this.transactionRepo.find({ where: { userId } });
-  }
+    async getOneTrans(id: string): Promise<Transactions> {
+        return await this.transactionsRepository.findOne({ where: { id } });
+    }
 
-  async getOneTrans(id: string, userId: string): Promise<Transactions | null> {
-    return await this.transactionRepo.findOne({ where: { id, userId } });
-  }
+    async getUserTransactions(userId: string): Promise<Transactions[]> {
+        return await this.transactionsRepository.find({ where: { userId } });
+    }
 
-  async deleteTrans(id: string): Promise<void> {
-    await this.transactionRepo.delete({ id });
-  }
+    // ... rest of your service methods
+    async deleteTrans(id: string): Promise<{ message: string }> {
+        const transaction = await this.transactionsRepository.findOne({ where: { id } });
 
-  async deleteAllTrans(userId: string): Promise<void> {
-    await this.transactionRepo.delete({ userId });
-  }
+        if (!transaction) {
+            throw new UnauthorizedException('Transaction not found');
+        }
 
-  async updateTrans(id: string, updateDto: updateTransactionDTO): Promise<Transactions> {
-    await this.transactionRepo.update(id, updateDto);
-    return await this.transactionRepo.findOne({ where: { id } });
-  }
+        await this.transactionsRepository.delete(id);
+        return { message: 'Transaction deleted successfully' };
+    }
+
+    async updateTrans(id: string, updateDto: updateTransactionDTO): Promise<Transactions> {
+        const transaction = await this.transactionsRepository.findOne({ where: { id } });
+
+        if (!transaction) {
+            throw new UnauthorizedException('Transaction not found');
+        }
+
+        await this.transactionsRepository.update(id, updateDto);
+        return await this.transactionsRepository.findOne({ where: { id } });
+    }
 }

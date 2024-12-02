@@ -1,40 +1,44 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
-@Entity({ schema: 'public', name: 'Transactions' }) // Map to the "transactions" table
+@Entity()
 export class Transactions {
-  @PrimaryGeneratedColumn('uuid') // Automatically generates a UUID for the transaction
-  id: string;
+    @PrimaryGeneratedColumn('uuid')
+    id: string;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2 }) // Amount with two decimal places
-  amount: number;
+    @Column({ type: 'varchar', nullable: false })
+    userId: string;
 
-  @Column({ name: 'vendorname', nullable: false }) // Name of the vendor or payee
-  vendorName: string;
+    @Column({ type: 'decimal', precision: 10, scale: 2 })
+    amount: number;
 
-  @Column({ name: 'transactiondate', type: 'timestamp', nullable: false }) // Timestamp of the transaction
-  transactionDate: Date;
+    @Column()
+    vendorName: string;
 
-  @Column({ nullable: true }) // Category for the transaction
-  category?: string;
+    @Column({ type: 'timestamp' })
+    transactionDate: Date;
 
-  @Column({ name: 'paymentmethod', type: 'enum', enum: ['cash', 'credit_card', 'debit_card', 'other'], default: 'other' }) // Payment method
-  paymentMethod: 'cash' | 'credit_card' | 'debit_card' | 'other';
+    @Column({ nullable: true })
+    category?: string;
 
-  @Column({ name: 'cardlastfourdigits', nullable: true }) // If card payment, store the last 4 digits
-  cardLastFourDigits?: string;
+    @Column({
+        type: 'enum',
+        enum: ['cash', 'credit_card', 'debit_card', 'other'],
+        default: 'cash'
+    })
+    paymentMethod: 'cash' | 'credit_card' | 'debit_card' | 'other';
 
-  @Column({ type: 'text', nullable: true }) // Place or location of the transaction
-  place?: string;
+    @Column({ nullable: true })
+    cardLastFourDigits?: string;
 
-  @Column({ nullable: true, default: null }) // Notes for additional details
-  notes?: string;
+    @Column({ nullable: true })
+    place?: string;
 
-  @Column({ name: 'userid', type: 'uuid', nullable: false }) // Associate transaction with a user
-  userId: string; // Foreign key to the user
+    @Column({ nullable: true })
+    notes?: string;
 
-  @CreateDateColumn({ name: 'createdat' }) // Automatically records creation timestamp
-  createdAt: Date;
+    @CreateDateColumn()
+    createdAt: Date;
 
-  @UpdateDateColumn({ name: 'updatedat' }) // Automatically updates on modification
-  updatedAt: Date;
+    @UpdateDateColumn()
+    updatedAt: Date;
 }
