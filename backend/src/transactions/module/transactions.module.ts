@@ -1,17 +1,33 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 import { TransactionsController } from '../controller/transactions.controller';
-import { Transactions } from '../schema/TransactionsSchema';
 import { TransactionsService } from '../services/transactions.service';
-import { RabbitMQModule } from './rabbitmq.module';
-// Import RabbitMQModule
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule } from '@nestjs/config';
+import { Transactions } from '../schema/TransactionsSchema';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Transactions]),
-    RabbitMQModule, // Import RabbitMQModule here
-  ],
-  controllers: [TransactionsController],
-  providers: [TransactionsService],
+    imports: [
+        TypeOrmModule.forFeature([Transactions]),
+        ClientsModule.register([
+            {
+                name: 'ANALYSIS_SERVICE',
+                transport: Transport.RMQ,
+                options: {
+                    urls: ['amqp://localhost:5672'],
+                    queue: 'analysis_queue',
+                    queueOptions: {
+                        durable: false,
+                        exclusive: false,
+                        autoDelete: false,
+                    },
+                   
+                },
+            },
+        ]),
+        ConfigModule,
+    ],
+    controllers: [TransactionsController],
+    providers: [TransactionsService],
 })
 export class TransactionsModule {}
