@@ -11,7 +11,7 @@ import { AuthGuard } from "../guards/auth.guard";
 
 
 @Controller('transactions')
-@UseGuards(AuthGuard)
+//@UseGuards(AuthGuard)
 export class TransactionsController {
   protected  readonly logger: Logger
   constructor(private readonly transactionService: TransactionsService) {}
@@ -77,23 +77,10 @@ export class TransactionsController {
     }
   }
 
-  // @Delete('/deleteAll')
-  // async deleteAllTransactions( id: string ,@Req() req: Request): Promise<{ message: string }> {
-  //   // const user = req.user.sub
-  //   // if (user !== id){
-  //   //   throw new UnauthorizedException('You can only delete your data')
-  //   // }
-  //   try {
-      
-  //     await this.transactionService.deleteAllTrans();
-  //     return { message: 'All Transactions Deleted' };
-  //   } catch (error) {
-  //     throw new BadRequestException(error.message);
-  //   }
-  // }
+ 
 
   @Put('/update/:id')
-  // @UsePipes(new ValidationPipe({ transform: true }))
+ 
   async updateTransaction(
     @Param('id') id: string,
     @Body() updateDTO: updateTransactionDTO,
@@ -111,18 +98,13 @@ export class TransactionsController {
     }
   }
 
-  // @Delete('/delete-all')
-  // async deleteAllTrans() {
-  //   try {
-  //     await this.transactionService.deleteAllTrans();
-  //     return { message: 'All Transactions Deleted' };
-  //   } catch (error) {
-  //     throw new BadRequestException(error.message);
-  //   }
-  // }
-
   @Get('/user/:userId')
   async getUserTransactions(@Param('userId') userId: string): Promise<Transactions[]> {
     return this.transactionService.getUserTransactions(userId);
+  }
+
+  @Get('/export/:userId')
+  async exportUserTransactionsToCSV(@Param('userId') userId: string): Promise<string> {
+    return this.transactionService.exportUserTransactionsToCSV(userId);
   }
 }
