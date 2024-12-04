@@ -8,13 +8,21 @@ import { FindTransactionDTO } from "../dto/FindTransactionDTO";
 
 import { Transactions } from "../schema/TransactionsSchema";
 import { AuthGuard } from "../guards/auth.guard";
+import { ClientProxy } from '@nestjs/microservices';
+import { Inject } from '@nestjs/common';
+import { firstValueFrom } from 'rxjs';
+import { PATTERNS } from '../../constants';
 
 
 @Controller('transactions')
 @UseGuards(AuthGuard)
 export class TransactionsController {
-  protected  readonly logger: Logger
-  constructor(private readonly transactionService: TransactionsService) {}
+  private readonly logger = new Logger(TransactionsController.name);
+
+  constructor(
+    private readonly transactionService: TransactionsService,
+    @Inject('ANALYSIS_SERVICE') private readonly client: ClientProxy,
+  ) {}
   
   @Post('/create')
   async createTransaction(
@@ -22,10 +30,13 @@ export class TransactionsController {
     @Req() req: any
   ): Promise<Transactions> {
     const userId = req.user?.id || createDto.userId;
-    return this.transactionService.addTrans({
+    const transaction = await this.transactionService.addTrans({
       ...createDto,
       userId,
     });
+    // Send a message to the Analysis service
+    this.client.emit('transaction_created', transaction);
+    return transaction;
   }
   
   @Get()
@@ -77,23 +88,10 @@ export class TransactionsController {
     }
   }
 
-  // @Delete('/deleteAll')
-  // async deleteAllTransactions( id: string ,@Req() req: Request): Promise<{ message: string }> {
-  //   // const user = req.user.sub
-  //   // if (user !== id){
-  //   //   throw new UnauthorizedException('You can only delete your data')
-  //   // }
-  //   try {
-      
-  //     await this.transactionService.deleteAllTrans();
-  //     return { message: 'All Transactions Deleted' };
-  //   } catch (error) {
-  //     throw new BadRequestException(error.message);
-  //   }
-  // }
+ 
 
   @Put('/update/:id')
-  // @UsePipes(new ValidationPipe({ transform: true }))
+ 
   async updateTransaction(
     @Param('id') id: string,
     @Body() updateDTO: updateTransactionDTO,
@@ -111,18 +109,30 @@ export class TransactionsController {
     }
   }
 
-  // @Delete('/delete-all')
-  // async deleteAllTrans() {
-  //   try {
-  //     await this.transactionService.deleteAllTrans();
-  //     return { message: 'All Transactions Deleted' };
-  //   } catch (error) {
-  //     throw new BadRequestException(error.message);
-  //   }
-  // }
-
   @Get('/user/:userId')
-  async getUserTransactions(@Param('userId') userId: string): Promise<Transactions[]> {
-    return this.transactionService.getUserTransactions(userId);
+  async getUserTransactions(@Param('userId') userId: string) {
+    try {
+      const transactions = await this.transactionService.getUserTransactions(userId);
+      
+      this.logger.log(`Emitting user_transactions_fetched event for userId: ${userId}`);
+      
+      // Use emit instead of send for one-way communication
+      await this.client.connect(); // Ensure connection is established
+      
+      this.client.emit('user_transactions_fetched', {
+        userId,
+        transactions,
+        timestamp: new Date()
+      });
+      
+      return transactions;
+    } catch (error) {
+      this.logger.error(`Error in getUserTransactions: ${error.message}`);
+      throw error;
+    }
+  }
+  @Get('/export/:userId')
+  async exportUserTransactionsToCSV(@Param('userId') userId: string): Promise<string> {
+    return this.transactionService.exportUserTransactionsToCSV(userId);
   }
 }
