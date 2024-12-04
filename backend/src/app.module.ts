@@ -6,7 +6,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
  
 import { Transactions } from './transactions/schema/TransactionsSchema';
 import { RmqService } from './services/rmq.services';
-import { TransactionsModule } from './transactions/module/transactions.module';
+import { TransactionsModule } from './transactions/module/transaction.module';
 import { QUEUE_NAME } from './constants';
 
 

@@ -15,7 +15,7 @@ import { PATTERNS } from '../../constants';
 
 
 @Controller('transactions')
-//@UseGuards(AuthGuard)
+@UseGuards(AuthGuard)
 export class TransactionsController {
   private readonly logger = new Logger(TransactionsController.name);
 
