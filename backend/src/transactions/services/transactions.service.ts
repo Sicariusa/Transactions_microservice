@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -8,6 +8,7 @@ import { Transactions } from '../schema/TransactionsSchema';
 import { createObjectCsvWriter } from 'csv-writer';
 import { join } from 'path';
 import { promises as fs } from 'fs';
+import * as faker from 'faker';
 
 @Injectable()
 export class TransactionsService {
@@ -122,4 +123,32 @@ export class TransactionsService {
 
     //     return join(__dirname, `../../../../exports/${userId}_transactions.csv`);
     // }
+
+    async createManyTransactions(createDtos: CreateTransactionsDTO[]): Promise<Transactions[]> {
+        if (!createDtos || createDtos.length === 0) {
+          throw new UnauthorizedException('At least one transaction is required');
+        }
+    
+        const transactions = [];
+        
+        for (const createDto of createDtos) {
+          if (!createDto.userId) {
+            throw new UnauthorizedException('User ID is required for each transaction');
+          }
+    
+          const transaction = this.transactionsRepository.create(createDto);
+          transactions.push(transaction);
+        }
+    
+        // Save all transactions at once
+        return await this.transactionsRepository.save(transactions);
+      }
+
+      async deleteTransactionsByUserId(userId: string): Promise<void> {
+        const result = await this.transactionsRepository.delete({ userId });
+    
+        if (result.affected === 0) {
+          throw new NotFoundException(`No transactions found for user ${userId}`);
+        }
+      }
 }

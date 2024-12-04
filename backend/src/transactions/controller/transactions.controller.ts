@@ -1,8 +1,8 @@
-import { BadRequestException, Body, Controller, Delete, Get, Logger, NotFoundException, Param, Post, Put, Req, UnauthorizedException, UsePipes, ValidationPipe, UseGuards } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Delete, Get, Logger, NotFoundException, Param, Post, Put, Req, UnauthorizedException, UseGuards } from "@nestjs/common";
 import { TransactionsService } from "../services/transactions.service";
-import { CreateTransactionsDTO } from "../dto/createTransactions.dto";
-
 import { Request } from "express";
+
+import { CreateTransactionsDTO } from "../dto/createTransactions.dto";
 import { updateTransactionDTO } from "../dto/updateTransaction.dto";
 import { FindTransactionDTO } from "../dto/FindTransactionDTO";
 
@@ -12,6 +12,64 @@ import { ClientProxy } from '@nestjs/microservices';
 import { Inject } from '@nestjs/common';
 import { firstValueFrom } from 'rxjs';
 import { PATTERNS } from '../../constants';
+
+// helper functions to generate data 
+
+function getRandomInt(min: number, max: number): number {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function getRandomFloat(min: number, max: number, decimalPlaces: number): number {
+  const rand = Math.random() * (max - min) + min;
+  return parseFloat(rand.toFixed(decimalPlaces));
+}
+
+function getRandomPaymentMethod(): 'cash' | 'credit_card' | 'debit_card' | 'other' {
+  const paymentMethods: ('cash' | 'credit_card' | 'debit_card' | 'other')[] = ['cash', 'credit_card', 'debit_card', 'other'];
+  return paymentMethods[getRandomInt(0, paymentMethods.length - 1)];
+}
+
+const vendorNames = [
+  'Abdo4Tech',
+  'HyperMart',
+  'SportsHub',
+  'HealthPlus',
+  'Panda',
+  'Electronix',
+  'Uncle Bashandy'
+]
+
+const places = [
+  'Fifth Settlement',
+  '6th Of Ocotber',
+  'Downtown',
+  'Central Park',
+  'Tahrir Square',
+  'New Cairo',
+  'City Park',
+  'DreamLand'
+]
+
+const categories = ['Groceries', 'Electronics', 'Entertainment', 'Food', 'Utilities'];
+
+function generateRandomTransaction(userId: string): CreateTransactionsDTO {
+
+  const randomDate = new Date();
+  const randomDays = getRandomInt(-365, 365); // Random days in the range of -365 days to +365 days (1 year before and after)
+  randomDate.setDate(randomDate.getDate() + randomDays);
+
+  return {
+  userId,
+    amount: getRandomFloat(1, 5000, 2), // Random amount between 1 and 5000 with 2 decimal places
+    vendorName: vendorNames[getRandomInt(0, vendorNames.length - 1)], // Random vendor from the static list
+    transactionDate: randomDate, // Random date within the last 30 days
+    category: categories[getRandomInt(0, categories.length - 1)], // Random category from predefined list
+    paymentMethod: getRandomPaymentMethod(),
+    cardLastFourDigits: Math.random() > 0.5 ? `${getRandomInt(1000, 9999)}` : undefined, // Random card number
+    place: places[getRandomInt(0, places.length - 1)], // Random place from the static list
+    notes: `Transaction note ${getRandomInt(1, 1000)}`, // Random note
+  };
+}
 
 
 @Controller('transactions')
@@ -134,5 +192,29 @@ export class TransactionsController {
   @Get('/export/:userId')
   async exportUserTransactionsToCSV(@Param('userId') userId: string): Promise<string> {
     return this.transactionService.exportUserTransactionsToCSV(userId);
+  }
+
+  @Post('create-many')
+  async createMultipleTransactions(
+    @Body('userId') userId: string,
+    @Body('count') count: number, // Specify how many transactions to create
+  ): Promise<CreateTransactionsDTO[]> {
+    const transactions: CreateTransactionsDTO[] = [];
+    
+    for (let i = 0; i < count; i++) {
+      const transaction = generateRandomTransaction(userId); // Generate random transaction
+      transactions.push(transaction);
+    }
+
+    // Assuming you have a service to handle saving these transactions
+    await this.transactionService.createManyTransactions(transactions);
+
+    return transactions; // Optionally return the generated transactions
+  } 
+
+  @Delete('delete-by-user/:userId')
+  async deleteByUserId(@Param('userId') userId: string): Promise<string> {
+    await this.transactionService.deleteTransactionsByUserId(userId);
+    return `Transactions for user ${userId} have been deleted`;
   }
 }
