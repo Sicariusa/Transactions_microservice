@@ -5,10 +5,10 @@ import { ConfigService } from "@nestjs/config";
 @Injectable()
 export class RmqService {
     constructor(private readonly configService: ConfigService) {}
-    
+
     getOptions(queue: string, noAck = false): RmqOptions {
         const RABBITMQ_URL = this.configService.get<string>('RABBITMQ_URL') || 'amqp://localhost:5672';
-        
+
         return {
             transport: Transport.RMQ,
             options: {
@@ -17,11 +17,13 @@ export class RmqService {
                 noAck,
                 persistent: true,
                 queueOptions: {
-                    durable: true
+                    durable: true, // Ensure the queue is persistent
                 },
-            }
+            },
         };
     }
+
+
 
     async validateToken(token: string): Promise<any> {
         // Add token validation logic here

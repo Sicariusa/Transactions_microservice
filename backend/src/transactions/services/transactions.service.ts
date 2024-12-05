@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Inject, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -8,22 +8,75 @@ import { Transactions } from '../schema/TransactionsSchema';
 import { createObjectCsvWriter } from 'csv-writer';
 import { join } from 'path';
 import { promises as fs } from 'fs';
+import { EventEmitter2 } from 'eventemitter2';
+import * as amqp from 'amqplib';
+import { ClientProxy } from '@nestjs/microservices';
+import { TransactionsQueueListenerService } from './transactionsQueueListen.service';
 
 @Injectable()
 export class TransactionsService {
+    private readonly logger = new Logger(TransactionsService.name);
+
     constructor(
         @InjectRepository(Transactions)
         private readonly transactionsRepository: Repository<Transactions>,
+        @Inject('AUTH_SERVICE') private readonly authClient: ClientProxy, 
+        private readonly queueListener: TransactionsQueueListenerService,
+        private readonly eventEmitter: EventEmitter2,
     ) {}
 
-    async addTrans(createDto: CreateTransactionsDTO): Promise<Transactions> {
-        if (!createDto.userId) {
-            throw new UnauthorizedException('User ID is required');
-        }
+    
+    async validateToken(token: string): Promise<any> {
+        const connection = await amqp.connect(process.env.RABBITMQ_URL);
+        const channel = await connection.createChannel();
+        const requestQueue = 'auth_queue';
+        const responseEvent = 'authResponse';
 
-        const transaction = this.transactionsRepository.create(createDto);
-        return await this.transactionsRepository.save(transaction);
+        await channel.assertQueue(requestQueue, { durable: true });
+
+        const correlationId = this.generateCorrelationId();
+        const message = { token };
+
+        channel.sendToQueue(requestQueue, Buffer.from(JSON.stringify(message)), { correlationId });
+        this.logger.log(`Token sent to queue "${requestQueue}" with correlationId: ${correlationId}`);
+
+        return new Promise((resolve, reject) => {
+            const timeout = setTimeout(() => {
+                this.logger.error('Timeout waiting for Auth Service response');
+                reject(new Error('Timeout waiting for Auth Service response'));
+            }, 10000); // 10 seconds timeout
+
+            this.eventEmitter.once(responseEvent, ({ correlationId: respCorrelationId, response }) => {
+                if (respCorrelationId === correlationId) {
+                    clearTimeout(timeout);
+                    this.logger.log(`Received response for correlationId: ${correlationId}`, response);
+                    resolve(response);
+                    return response;
+                }
+            });
+        });
     }
+
+    async addTransaction(createDto: CreateTransactionsDTO, userId: string): Promise<any> {
+
+
+        const transaction = {
+            ...createDto,
+            userId: userId,
+            
+        };
+
+        this.logger.log(`Transaction created: ${JSON.stringify(transaction)}`);
+        //save the transaction to the database
+        await this.transactionsRepository.save(transaction);
+        return transaction;
+    }
+
+    private generateCorrelationId(): string {
+        return Math.random().toString(36).substring(2, 15); // Generate a random string
+    }
+
+
 
     async getAllTrans(): Promise<Transactions[]> {
         return await this.transactionsRepository.find();

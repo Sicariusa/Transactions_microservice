@@ -8,6 +8,7 @@ import { Transactions } from './transactions/schema/TransactionsSchema';
 import { RmqService } from './services/rmq.services';
 import { TransactionsModule } from './transactions/module/transaction.module';
 import { QUEUE_NAME } from './constants';
+import { TransactionsQueueListenerService } from './transactions/services/transactionsQueueListen.service';
 
 
 @Module({
@@ -40,13 +41,13 @@ import { QUEUE_NAME } from './constants';
           urls: [process.env.RABBITMQ_URL || 'amqp://localhost:5672'],
           queue: QUEUE_NAME,
           queueOptions: {
-            durable: false,
+            durable: true,
           },
         },
       },
     ]),
     TransactionsModule,
   ],
-  providers: [RmqService],
+  providers: [RmqService, TransactionsQueueListenerService],
 })
 export class AppModule {}

@@ -1,9 +1,9 @@
 import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID, Max, Min } from 'class-validator';
 
 export class CreateTransactionsDTO {
-  @IsNotEmpty()
-  @IsString()
-  userId: string;
+  // @IsNotEmpty()
+  // @IsString()
+  // userId: string;
 
   @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0)

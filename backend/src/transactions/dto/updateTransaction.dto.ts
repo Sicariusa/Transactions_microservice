@@ -2,8 +2,9 @@ import { IsDate, IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID } from "clas
 
 export class updateTransactionDTO {
 
-    @IsUUID()
-    id: string;
+    // @IsUUID()
+    // @IsNotEmpty()
+    // id: string;
     @IsOptional()
     @IsString()
     title?: string

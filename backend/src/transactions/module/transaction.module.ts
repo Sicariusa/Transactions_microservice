@@ -5,6 +5,8 @@ import { TransactionsService } from '../services/transactions.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { Transactions } from '../schema/TransactionsSchema';
+import { TransactionsQueueListenerService } from '../services/transactionsQueueListen.service';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
     imports: [
@@ -14,7 +16,7 @@ import { Transactions } from '../schema/TransactionsSchema';
                 name: 'ANALYSIS_SERVICE',
                 transport: Transport.RMQ,
                 options: {
-                    urls: ['amqp://localhost:5672'],
+                    urls: [process.env.RABBITMQ_URL || 'amqp://localhost:5672'],
                     queue: 'analysis_queue',
                     queueOptions: {
                         durable: false,
@@ -27,7 +29,7 @@ import { Transactions } from '../schema/TransactionsSchema';
                 name: 'AUTH_SERVICE',
                 transport: Transport.RMQ,
                 options: {
-                    urls: ['amqp://localhost:5672'],
+                    urls: [process.env.RABBITMQ_URL || 'amqp://localhost:5672'],
                     queue: 'auth_queue',
                     queueOptions: {
                         durable: false,
@@ -36,8 +38,10 @@ import { Transactions } from '../schema/TransactionsSchema';
             },
         ]),
         ConfigModule,
+        EventEmitterModule.forRoot(),
     ],
     controllers: [TransactionsController],
-    providers: [TransactionsService],
+    providers: [TransactionsService,TransactionsQueueListenerService],
+    exports: [TransactionsQueueListenerService],
 })
 export class TransactionsModule {}

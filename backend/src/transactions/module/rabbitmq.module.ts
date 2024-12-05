@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
+import { TransactionsQueueListenerService } from '../services/transactionsQueueListen.service';
 
 @Module({
   imports: [
@@ -11,12 +12,14 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
           urls: [process.env.RABBITMQ_URL],
           queue: 'auth_queue',
           queueOptions: {
-            durable: false,
+            durable: true,
           },
         },
       },
     ]),
   ],
-  exports: [ClientsModule], // Export ClientsModule to use in other modules
+  providers: [TransactionsQueueListenerService],
+  controllers: [TransactionsQueueListenerService],
+  exports: [ClientsModule, TransactionsQueueListenerService], // Export ClientsModule to use in other modules
 })
 export class RabbitMQModule {}
