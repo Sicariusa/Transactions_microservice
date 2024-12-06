@@ -1,17 +1,14 @@
-import { Inject, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { Injectable, Logger, BadRequestException, UnauthorizedException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-
+import { Transactions } from '../schema/TransactionsSchema';
 import { CreateTransactionsDTO } from '../dto/createTransactions.dto';
 import { updateTransactionDTO } from '../dto/updateTransaction.dto';
-import { Transactions } from '../schema/TransactionsSchema';
 import { createObjectCsvWriter } from 'csv-writer';
-import { join } from 'path';
+import * as path from 'path';
 import { promises as fs } from 'fs';
-import { EventEmitter2 } from 'eventemitter2';
 import * as amqp from 'amqplib';
-import { ClientProxy } from '@nestjs/microservices';
-import { TransactionsQueueListenerService } from './transactionsQueueListen.service';
+import { EventEmitter2 } from 'eventemitter2';
 
 @Injectable()
 export class TransactionsService {
@@ -20,12 +17,13 @@ export class TransactionsService {
     constructor(
         @InjectRepository(Transactions)
         private readonly transactionsRepository: Repository<Transactions>,
-        @Inject('AUTH_SERVICE') private readonly authClient: ClientProxy, 
-        private readonly queueListener: TransactionsQueueListenerService,
         private readonly eventEmitter: EventEmitter2,
     ) {}
 
-    
+    private generateCorrelationId(): string {
+        return Math.random().toString(36).substring(2, 15);
+    }
+
     async validateToken(token: string): Promise<any> {
         const connection = await amqp.connect(process.env.RABBITMQ_URL);
         const channel = await connection.createChannel();
@@ -44,135 +42,136 @@ export class TransactionsService {
             const timeout = setTimeout(() => {
                 this.logger.error('Timeout waiting for Auth Service response');
                 reject(new Error('Timeout waiting for Auth Service response'));
-            }, 10000); // 10 seconds timeout
+            }, 10000);
 
             this.eventEmitter.once(responseEvent, ({ correlationId: respCorrelationId, response }) => {
                 if (respCorrelationId === correlationId) {
                     clearTimeout(timeout);
-                    this.logger.log(`Received response for correlationId: ${correlationId}`, response);
+                    this.logger.log(`Received response for correlationId: ${correlationId}`);
                     resolve(response);
-                    return response;
                 }
             });
         });
     }
 
-    async addTransaction(createDto: CreateTransactionsDTO, userId: string): Promise<any> {
-
-
-        const transaction = {
-            ...createDto,
-            userId: userId,
-            
-        };
-
-        this.logger.log(`Transaction created: ${JSON.stringify(transaction)}`);
-        //save the transaction to the database
-        await this.transactionsRepository.save(transaction);
-        return transaction;
+    async addTransaction(createDto: CreateTransactionsDTO, userId: string): Promise<Transactions> {
+        const transaction = this.transactionsRepository.create({ ...createDto, userId });
+        return await this.transactionsRepository.save(transaction);
     }
-
-    private generateCorrelationId(): string {
-        return Math.random().toString(36).substring(2, 15); // Generate a random string
-    }
-
-
 
     async getAllTrans(): Promise<Transactions[]> {
         return await this.transactionsRepository.find();
     }
 
     async getOneTrans(id: string): Promise<Transactions> {
+        if (!this.isValidUUID(id)) {
+            throw new BadRequestException(`Invalid id format: ${id}`);
+        }
         return await this.transactionsRepository.findOne({ where: { id } });
     }
 
     async getUserTransactions(userId: string): Promise<Transactions[]> {
+        if (!this.isValidUUID(userId)) {
+            throw new BadRequestException(`Invalid userId format: ${userId}`);
+        }
         return await this.transactionsRepository.find({ where: { userId } });
     }
 
-    // ... rest of your service methods
-    async deleteTrans(id: string): Promise<{ message: string }> {
-        const transaction = await this.transactionsRepository.findOne({ where: { id } });
-
+    async deleteTrans(id: string): Promise<void> {
+        const transaction = await this.getOneTrans(id);
         if (!transaction) {
-            throw new UnauthorizedException('Transaction not found');
+            throw new NotFoundException('Transaction not found');
         }
-
         await this.transactionsRepository.delete(id);
-        return { message: 'Transaction deleted successfully' };
     }
 
     async updateTrans(id: string, updateDto: updateTransactionDTO): Promise<Transactions> {
-        const transaction = await this.transactionsRepository.findOne({ where: { id } });
-
+        const transaction = await this.getOneTrans(id);
         if (!transaction) {
-            throw new UnauthorizedException('Transaction not found');
+            throw new NotFoundException('Transaction not found');
         }
-
         await this.transactionsRepository.update(id, updateDto);
         return await this.transactionsRepository.findOne({ where: { id } });
     }
 
-
-
     async exportUserTransactionsToCSV(userId: string): Promise<string> {
-        const transactions = await this.getUserTransactions(userId);
-    
-        if (transactions.length === 0) {
-          throw new UnauthorizedException('No transactions found for this user');
-        }
-            // save in the exports directory
-        
-        //const exportDir = join(__dirname, '../../../../exports');
-        const exportDir = join('C:/Users/abdo2/Documents/GitHub/Transactions_microservice/backend/exports');
-        const filePath = join(exportDir, `${userId}_transactions.csv`);
-    
-        // Ensure the exports directory exists
+        const transactions = await this.transactionsRepository.find({ where: { userId } });
+        if (transactions.length === 0) throw new UnauthorizedException('No transactions found');
+
+        const exportDir = path.join(process.cwd(), 'backend/exports');
+        const filePath = path.join(exportDir, `${userId}_transactions.csv`);
         await fs.mkdir(exportDir, { recursive: true });
-    
+
         const csvWriter = createObjectCsvWriter({
-          path: filePath,
-          header: [
-            { id: 'id', title: 'ID' },
-            { id: 'amount', title: 'Amount' },
-            { id: 'vendorName', title: 'Vendor Name' },
-            { id: 'transactionDate', title: 'Transaction Date' },
-            { id: 'category', title: 'Category' },
-            { id: 'paymentMethod', title: 'Payment Method' },
-            { id: 'cardLastFourDigits', title: 'Card Last Four Digits' },
-            { id: 'place', title: 'Place' },
-            { id: 'notes', title: 'Notes' },
-            { id: 'createdAt', title: 'Created At' },
-            { id: 'updatedAt', title: 'Updated At' },
-            { id: 'userId', title: 'User ID' },
-          ],
+            path: filePath,
+            header: [
+                { id: 'id', title: 'ID' },
+                { id: 'amount', title: 'Amount' },
+                { id: 'vendorName', title: 'Vendor Name' },
+                { id: 'transactionDate', title: 'Transaction Date' },
+                { id: 'category', title: 'Category' },
+                { id: 'paymentMethod', title: 'Payment Method' },
+                { id: 'place', title: 'Place' },
+                { id: 'userId', title: 'User ID' },
+            ],
         });
-    
-        await csvWriter.writeRecords(transactions);
-    
+
+        const formattedTransactions = transactions.map((t) => ({
+            id: t.id,
+            amount: t.amount,
+            vendorName: t.vendorName,
+            transactionDate: t.transactionDate
+                ? new Date(t.transactionDate).toISOString().slice(0, 19).replace('T', ' ')
+                : '',
+            category: t.category,
+            paymentMethod: t.paymentMethod,
+            place: t.place,
+            userId: t.userId,
+        }));
+
+        await csvWriter.writeRecords(formattedTransactions);
+        this.logger.log(`CSV exported to ${filePath}`);
+
+        const csvData = await fs.readFile(filePath, { encoding: 'base64' });
+        await this.sendCsvToAnalysisMicroservice(userId, csvData);
+
         return filePath;
-      }
+    }
 
-    // async exportUserTransactionsToCSV(userId: string): Promise<string> {
-    //     const transactions = await this.getUserTransactions(userId);
+    private async sendCsvToAnalysisMicroservice(userId: string, csvData: string): Promise<void> {
+        const connection = await amqp.connect(process.env.RABBITMQ_URL);
+        const channel = await connection.createChannel();
+        const queue = 'analysis_queue';
 
-    //     if (transactions.length === 0) {
-    //         throw new UnauthorizedException('No transactions found for this user');
-    //     }
+        await channel.assertQueue(queue, { durable: true });
 
-    //     const csvWriter = createObjectCsvWriter({
-    //         path: join(__dirname, `../../../../exports/${userId}_transactions.csv`),
-    //         header: [
-    //             { id: 'id', title: 'ID' },
-    //             { id: 'amount', title: 'Amount' },
-    //             { id: 'type', title: 'Type' },
-    //             { id: 'date', title: 'Date' },
-    //             { id: 'userId', title: 'User ID' },
-    //         ],
-    //     });
+        const CHUNK_SIZE = 1024; // 1 KB
+        const totalChunks = Math.ceil(csvData.length / CHUNK_SIZE);
 
-    //     await csvWriter.writeRecords(transactions);
+        for (let i = 0; i < totalChunks; i++) {
+            const chunk = csvData.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE);
 
-    //     return join(__dirname, `../../../../exports/${userId}_transactions.csv`);
-    // }
+            const message = {
+                userId,
+                chunk,
+                chunkIndex: i + 1,
+                totalChunks,
+            };
+            channel.sendToQueue(queue, Buffer.from(JSON.stringify(message)));
+            await new Promise((resolve) => setTimeout(resolve, 100));
+        }
+
+        this.logger.log(`CSV data for userId: ${userId} sent in ${totalChunks} chunks`);
+        await channel.close();
+        await connection.close();
+    }
+
+    private delay(ms: number): Promise<void> {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+
+    private isValidUUID(id: string): boolean {
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+        return uuidRegex.test(id);
+    }
 }

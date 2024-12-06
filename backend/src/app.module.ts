@@ -48,6 +48,6 @@ import { TransactionsQueueListenerService } from './transactions/services/transa
     ]),
     TransactionsModule,
   ],
-  providers: [RmqService, TransactionsQueueListenerService],
+  providers: [RmqService],
 })
 export class AppModule {}

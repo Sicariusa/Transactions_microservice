@@ -20,6 +20,6 @@ import { TransactionsQueueListenerService } from '../services/transactionsQueueL
   ],
   providers: [TransactionsQueueListenerService],
   controllers: [TransactionsQueueListenerService],
-  exports: [ClientsModule, TransactionsQueueListenerService], // Export ClientsModule to use in other modules
+  exports: [ClientsModule], // Export ClientsModule to use in other modules
 })
 export class RabbitMQModule {}
