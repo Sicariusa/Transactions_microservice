@@ -42,7 +42,7 @@ export class TransactionsService {
             const timeout = setTimeout(() => {
                 this.logger.error('Timeout waiting for Auth Service response');
                 reject(new Error('Timeout waiting for Auth Service response'));
-            }, 10000);
+            }, 30000);
 
             this.eventEmitter.once(responseEvent, ({ correlationId: respCorrelationId, response }) => {
                 if (respCorrelationId === correlationId) {
@@ -56,7 +56,9 @@ export class TransactionsService {
 
     async addTransaction(createDto: CreateTransactionsDTO, userId: string): Promise<Transactions> {
         const transaction = this.transactionsRepository.create({ ...createDto, userId });
-        return await this.transactionsRepository.save(transaction);
+        await this.transactionsRepository.save(transaction);
+        this.exportUserTransactionsToCSV(userId);
+        return transaction;
     }
 
     async getAllTrans(): Promise<Transactions[]> {
@@ -95,7 +97,7 @@ export class TransactionsService {
     }
 
     async exportUserTransactionsToCSV(userId: string): Promise<string> {
-        const transactions = await this.transactionsRepository.find({ where: { userId } });
+        const transactions = await this.getUserTransactions(userId);
         if (transactions.length === 0) throw new UnauthorizedException('No transactions found');
 
         const exportDir = path.join(process.cwd(), 'backend/exports');
@@ -153,10 +155,11 @@ export class TransactionsService {
 
             const message = {
                 userId,
-                chunk,
                 chunkIndex: i + 1,
                 totalChunks,
+                chunk,
             };
+            console.log(message);
             channel.sendToQueue(queue, Buffer.from(JSON.stringify(message)));
             await new Promise((resolve) => setTimeout(resolve, 100));
         }

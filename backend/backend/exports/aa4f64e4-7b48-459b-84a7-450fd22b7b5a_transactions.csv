@@ -1,11 +1,24 @@
-ID,Amount,Vendor Name,Transaction Date,Category,Payment Method,Card Last Four Digits,Place,Notes,Created At,Updated At,User ID
-a2d23dc4-dc3d-494b-87e1-99bfd9e90283,6789.00,Hegab's Grocery Store,2024-11-27 15:52:00,Groceries,credit_card,1234,Supermarket,,2024-12-06 18:31:18,2024-12-06 18:31:18,aa4f64e4-7b48-459b-84a7-450fd22b7b5a
-7689c2b4-136b-4e76-8e2b-69e8531817b7,500.00,Fast Food Joint,2024-11-26 18:30:00,Food,cash,,Food Court,,2024-12-06 18:31:26,2024-12-06 18:31:26,aa4f64e4-7b48-459b-84a7-450fd22b7b5a
-8f202af0-2755-401d-bf4d-8492936f5b54,2500.00,Electronics Store,2024-11-25 14:00:00,Electronics,credit_card,5678,Mall,,2024-12-06 18:31:35,2024-12-06 18:31:35,aa4f64e4-7b48-459b-84a7-450fd22b7b5a
-79d3be82-158f-423e-bff7-9b300113f85b,10000.00,Car Service,2024-11-24 10:45:00,Automobile,debit_card,4321,Service Center,,2024-12-06 18:31:47,2024-12-06 18:31:47,aa4f64e4-7b48-459b-84a7-450fd22b7b5a
-29acd9c1-2561-4053-8768-127996da547d,300.00,Bookstore,2024-11-23 16:20:00,Books,cash,,Bookshop,,2024-12-06 18:31:56,2024-12-06 18:31:56,aa4f64e4-7b48-459b-84a7-450fd22b7b5a
-b2a9a793-62a7-4544-8c10-3ca79e6ea40c,1200.00,Pharmacy,2024-11-22 12:30:00,Health,credit_card,8765,Pharmacy,,2024-12-06 18:32:05,2024-12-06 18:32:05,aa4f64e4-7b48-459b-84a7-450fd22b7b5a
-641ee9f1-9b5a-46a1-94aa-1fc3e2d85f25,4500.00,Furniture Store,2024-11-21 11:00:00,Furniture,credit_card,1111,Furniture Mall,,2024-12-06 18:32:13,2024-12-06 18:32:13,aa4f64e4-7b48-459b-84a7-450fd22b7b5a
-05682299-db08-4c06-8264-529f86d94835,800.00,Online Streaming,2024-11-20 08:00:00,Entertainment,debit_card,2222,Online,,2024-12-06 18:32:23,2024-12-06 18:32:23,aa4f64e4-7b48-459b-84a7-450fd22b7b5a
-baefae01-4304-4f3b-aca0-519641172d25,400.00,Coffee Shop,2024-11-19 14:45:00,Food,cash,,Cafe,,2024-12-06 18:32:31,2024-12-06 18:32:31,aa4f64e4-7b48-459b-84a7-450fd22b7b5a
-7998c0c9-282f-48fd-86b7-3b1a18f081cb,15000.00,Travel Agency,2024-11-18 09:30:00,Travel,credit_card,3333,Agency,,2024-12-06 18:32:40,2024-12-06 18:32:40,aa4f64e4-7b48-459b-84a7-450fd22b7b5a
+ID,Amount,Vendor Name,Transaction Date,Category,Payment Method,Place,User ID
+a2d23dc4-dc3d-494b-87e1-99bfd9e90283,6789.00,Hegab's Grocery Store,2024-11-27 15:52:00,Groceries,credit_card,Supermarket,aa4f64e4-7b48-459b-84a7-450fd22b7b5a
+7689c2b4-136b-4e76-8e2b-69e8531817b7,500.00,Fast Food Joint,2024-11-26 18:30:00,Food,cash,Food Court,aa4f64e4-7b48-459b-84a7-450fd22b7b5a
+8f202af0-2755-401d-bf4d-8492936f5b54,2500.00,Electronics Store,2024-11-25 14:00:00,Electronics,credit_card,Mall,aa4f64e4-7b48-459b-84a7-450fd22b7b5a
+79d3be82-158f-423e-bff7-9b300113f85b,10000.00,Car Service,2024-11-24 10:45:00,Automobile,debit_card,Service Center,aa4f64e4-7b48-459b-84a7-450fd22b7b5a
+29acd9c1-2561-4053-8768-127996da547d,300.00,Bookstore,2024-11-23 16:20:00,Books,cash,Bookshop,aa4f64e4-7b48-459b-84a7-450fd22b7b5a
+b2a9a793-62a7-4544-8c10-3ca79e6ea40c,1200.00,Pharmacy,2024-11-22 12:30:00,Health,credit_card,Pharmacy,aa4f64e4-7b48-459b-84a7-450fd22b7b5a
+641ee9f1-9b5a-46a1-94aa-1fc3e2d85f25,4500.00,Furniture Store,2024-11-21 11:00:00,Furniture,credit_card,Furniture Mall,aa4f64e4-7b48-459b-84a7-450fd22b7b5a
+05682299-db08-4c06-8264-529f86d94835,800.00,Online Streaming,2024-11-20 08:00:00,Entertainment,debit_card,Online,aa4f64e4-7b48-459b-84a7-450fd22b7b5a
+baefae01-4304-4f3b-aca0-519641172d25,400.00,Coffee Shop,2024-11-19 14:45:00,Food,cash,Cafe,aa4f64e4-7b48-459b-84a7-450fd22b7b5a
+7998c0c9-282f-48fd-86b7-3b1a18f081cb,15000.00,Travel Agency,2024-11-18 09:30:00,Travel,credit_card,Agency,aa4f64e4-7b48-459b-84a7-450fd22b7b5a
+f467a7c8-4d82-4838-ad83-0a0663b1c90e,12500.00,Fitness Pro,2024-11-22 07:30:00,Fitness,debit_card,Gym Center,aa4f64e4-7b48-459b-84a7-450fd22b7b5a
+7d0a886e-851b-4ebe-9045-1f4a2ef754ae,6800.00,Grocery King,2024-11-21 15:30:00,Groceries,credit_card,Supermarket,aa4f64e4-7b48-459b-84a7-450fd22b7b5a
+7efc5a44-251f-42d0-8c62-37c86ca566af,2500.00,Fast Food Joint,2024-11-20 19:00:00,Food,cash,Food Court,aa4f64e4-7b48-459b-84a7-450fd22b7b5a
+b3c0eca0-e39c-4fed-9109-6d5f44e548d4,7000.00,Home Fix Services,2024-11-19 10:15:00,Maintenance,debit_card,Service Center,aa4f64e4-7b48-459b-84a7-450fd22b7b5a
+82c1477c-ae48-4f1e-8edb-6122251cb468,3000.00,Book Haven,2024-11-17 16:30:00,Books,cash,Bookstore,aa4f64e4-7b48-459b-84a7-450fd22b7b5a
+6d283c77-dbea-4c32-8e7c-3bfe230fe557,5500.00,Luxury Travel,2024-11-16 09:00:00,Travel,credit_card,Agency,aa4f64e4-7b48-459b-84a7-450fd22b7b5a
+7e55c45d-ae3b-49ee-a19a-7ab42fb8826d,8000.00,Online Streaming,2024-11-15 20:00:00,Entertainment,debit_card,Online,aa4f64e4-7b48-459b-84a7-450fd22b7b5a
+3ac94ded-a056-4035-9cd5-97e57c02dd9e,2200.00,Medic+ Pharmacy,2024-11-14 14:30:00,Health,credit_card,Pharmacy,aa4f64e4-7b48-459b-84a7-450fd22b7b5a
+6c90c17f-70d2-4ee0-bb3c-f0d9daea0653,4500.00,Furniture World,2024-11-12 13:45:00,Furniture,debit_card,Furniture Mall,aa4f64e4-7b48-459b-84a7-450fd22b7b5a
+39ce06b2-52e8-4692-be31-8a57ccb0625f,10000.00,Tech Solutions,2024-11-10 11:00:00,Electronics,credit_card,Electronics Mall,aa4f64e4-7b48-459b-84a7-450fd22b7b5a
+499159c4-b5a8-436b-9c71-c176d8cb2f13,20000.00,Tech Solutions,2024-11-10 11:00:00,Electronics,credit_card,Electronics Mall,aa4f64e4-7b48-459b-84a7-450fd22b7b5a
+a387a58d-54c4-4891-acb2-b8c1dc287d88,23000.00,Tech Solutions,2024-11-10 11:00:00,Electronics,credit_card,Electronics Mall,aa4f64e4-7b48-459b-84a7-450fd22b7b5a
+d6d3b10e-6b48-4d3b-b2e3-c9bf4d3d7ab0,3000.00,Tech Solutions,2024-11-10 11:00:00,Electronics,credit_card,Electronics Mall,aa4f64e4-7b48-459b-84a7-450fd22b7b5a
