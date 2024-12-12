@@ -18,17 +18,13 @@ import { TransactionsQueueListenerService } from './transactions/services/transa
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
+      useFactory: () => ({
         type: 'postgres',
-        host: configService.get('DB_HOST'),
-        port: configService.get('DB_PORT'),
-        username: configService.get('DB_USER'),
-        password: configService.get('DB_PASSWORD'),
-        database: configService.get('DB_DATABASE'),
+        url: process.env.DATABASE_URL,
         entities: [Transactions],
-        synchronize: true,
+        synchronize: false,
         ssl: {
-          rejectUnauthorized: false,
+          rejectUnauthorized: false
         },
       }),
       inject: [ConfigService],
