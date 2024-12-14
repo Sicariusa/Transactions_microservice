@@ -5,6 +5,8 @@ export class CreateTransactionsDTO {
   // @IsString()
   // userId: string;
 
+  
+
   @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0)
   @Max(999999.99)
