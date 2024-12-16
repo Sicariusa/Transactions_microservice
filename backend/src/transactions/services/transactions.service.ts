@@ -25,54 +25,35 @@ export class TransactionsService {
     }
 
     async validateToken(token: string): Promise<any> {
-        const rabbitmqUrl = process.env.RABBITMQ_URL;
-        if (!rabbitmqUrl) {
-            throw new Error('RABBITMQ_URL is not defined');
-        }
-      
-        const connection = await amqp.connect(rabbitmqUrl);
+        const connection = await amqp.connect(process.env.RABBITMQ_URL);
         const channel = await connection.createChannel();
-      
         const requestQueue = 'auth_queue';
-        const replyQueue = "transactions_queue"; // Temporary reply queue
-      
+        const responseEvent = 'authResponse';
+
+        await channel.assertQueue(requestQueue, { durable: true });
+
         const correlationId = this.generateCorrelationId();
-        const message = { token };
-      
-        // Listen to the reply queue for a response
-        channel.consume(
-            replyQueue,
-            (msg) => {
-                if (msg && msg.properties.correlationId === correlationId) {
-                    this.logger.log(`Received response for correlationId: ${correlationId}`);
-                    const response = JSON.parse(msg.content.toString());
-                    this.eventEmitter.emit('authResponse', response);
-                }
-            },
-            { noAck: true },
-        );
-      
-        // Send message to the auth_queue with replyTo and correlationId
-        channel.sendToQueue(requestQueue, Buffer.from(JSON.stringify(message)), {
-            correlationId,
-            replyTo: replyQueue,
-        });
-      
+        const flag=true
+        const message = { token ,flag};
+
+        channel.sendToQueue(requestQueue, Buffer.from(JSON.stringify(message)), { correlationId });
         this.logger.log(`Token sent to queue "${requestQueue}" with correlationId: ${correlationId}`);
-      
-        // Wait for response
+
         return new Promise((resolve, reject) => {
             const timeout = setTimeout(() => {
                 this.logger.error('Timeout waiting for Auth Service response');
                 reject(new Error('Timeout waiting for Auth Service response'));
             }, 30000);
-      
-            this.eventEmitter.once('authResponse', (response: unknown) => {
-                clearTimeout(timeout);
-                resolve(response);
+
+            this.eventEmitter.once(responseEvent, ({ correlationId: respCorrelationId, response }) => {
+                if (respCorrelationId === correlationId) {
+                    clearTimeout(timeout);
+                    this.logger.log(`Received response for correlationId: ${correlationId}`);
+                    resolve(response);
+                }
             });
         });
-      }
+    }
 
     async addTransaction(createDto: CreateTransactionsDTO, userId: string): Promise<Transactions> {
         const transaction = this.transactionsRepository.create({ ...createDto, userId });
