@@ -79,20 +79,22 @@ export class TransactionsService {
         return await this.transactionsRepository.find({ where: { userId } });
     }
 
-    async deleteTrans(id: string): Promise<void> {
+    async deleteTrans(id: string,userId: string): Promise<void> {
         const transaction = await this.getOneTrans(id);
         if (!transaction) {
             throw new NotFoundException('Transaction not found');
         }
+        await this.exportUserTransactionsToCSV(userId);
         await this.transactionsRepository.delete(id);
     }
 
-    async updateTrans(id: string, updateDto: updateTransactionDTO): Promise<Transactions> {
+    async updateTrans(id: string, updateDto: updateTransactionDTO,userId: string): Promise<Transactions> {
         const transaction = await this.getOneTrans(id);
         if (!transaction) {
             throw new NotFoundException('Transaction not found');
         }
         await this.transactionsRepository.update(id, updateDto);
+        await this.exportUserTransactionsToCSV(userId);
         return await this.transactionsRepository.findOne({ where: { id } });
     }
 

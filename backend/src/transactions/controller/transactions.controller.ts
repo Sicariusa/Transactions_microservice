@@ -130,7 +130,7 @@ async exportUserTransactionsToCSV(@Req() req: any): Promise<{ message: string }>
             throw new UnauthorizedException('You can only delete your own transactions');
         }
 
-        await this.transactionService.deleteTrans(id);
+        await this.transactionService.deleteTrans(id,validationResult.userId);
         return { message: 'Transaction deleted' };
     }
 
@@ -163,6 +163,6 @@ async exportUserTransactionsToCSV(@Req() req: any): Promise<{ message: string }>
             throw new UnauthorizedException('You can only update your own transactions');
         }
 
-        return await this.transactionService.updateTrans(id, updateDTO);
+        return await this.transactionService.updateTrans(id, updateDTO,validationResult.userId);
     }
 }
